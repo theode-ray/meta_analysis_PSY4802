@@ -1,0 +1,15 @@
+---
+title: "meta_analysis"
+author: "Theodore Rogers"
+date: "2023-11-21"
+output: html_document
+---
+
+```{r}
+library(readxl)
+big_data = read_excel("/Users/theodorerogers/Downloads/meta_analysisDat.xlsx")
+# do one test on all of the models in table 4
+# add study location as predictor
+# you don't have to do analyses on specifically one location or another
+```
+
