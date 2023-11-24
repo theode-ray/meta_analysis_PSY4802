@@ -1,10 +1,10 @@
 ---
 title: "meta_analysis"
-author: "Theodore Rogers"
+author: "Theodore Rogers, Olivia Costa, Quincey Feragen, Penelope Corbett"
 date: "2023-11-21"
 output: html_document
 ---
-
+reading excel spreadsheet
 ```{r}
 library(readxl)
 big_data = read_excel("/Users/theodorerogers/Downloads/meta_analysisDat.xlsx")
@@ -22,12 +22,13 @@ for (col in big_data[2:28]) {
 }
 colnames(dat) <- names(big_data)
 ```
-changing specific values to their specific things
+changing specific values to their specific things (not income, due to currency differences)
 ```{r}
 library(dplyr)
 #ladder
 ladder <- as.factor(dat$ladder)
 dat$ladder <- ladder
+
 # columns 3 to 8
 for (i in 3:8) {
   dat[i][dat[i] == "1"] <- "yes"
@@ -38,16 +39,19 @@ for (i in 11:16) {
   dat[i][dat[i] == "1"] <- "yes"
   dat[i][dat[i] == "2"] <- "no"
 }
+  
 # columns 19 to 23
 for (i in 19:23) {
   dat[i][dat[i] == "1"] <- "yes"
   dat[i][dat[i] == "2"] <- "no"
 }
+  
 # gender
 dat$gender[dat$gender == "1"] <- "woman"
 dat$gender[dat$gender == "2"] <- "man"
 dat$gender[dat$gender == "3"] <- "nonbinary"
 dat$gender[dat$gender == "4"] <- NA
+
 # maritalStatus
 dat$maritalStatus[dat$maritalStatus == "1"] <- "married"
 dat$maritalStatus[dat$maritalStatus == "2"] <- "domestic partnership"
@@ -55,20 +59,62 @@ dat$maritalStatus[dat$maritalStatus == "3"] <- "single"
 dat$maritalStatus[dat$maritalStatus == "4"] <- "divorced or separated"
 dat$maritalStatus[dat$maritalStatus == "5"] <- "widowed"
 dat$maritalStatus[dat$maritalStatus == "6"] <- NA
+
 # residentialArea
 dat$residentialArea[dat$residentialArea == "1"] <- "rural"
 dat$residentialArea[dat$residentialArea == "2"] <- "village"
-dat$residentialArea[dat$residentialArea == "3"] <- "urban/city"
+dat$residentialArea[dat$esidentialArea == "3"] <- "urban/city"
 dat$residentialArea[dat$residentialArea == "4"] <- "suburban"
+
 # education
 dat$education[dat$education == "1"] <- "primary or less"
 dat$education[dat$education == "2"] <- "secondary"
 dat$education[dat$education == "3"] <- "some teriary"
 dat$education[dat$education == "4"] <- "full teritary"
 dat$education[dat$education == "5"] <- "graduate degree"
+
+# make sure income is numeric
+dat$income <- as.numeric(dat$income)
+```
+subsets for datasets split by country:
+For this section, I modified the values of the different incomes by converting their income to 2023 USD, after looking up the conversion rate on Google. Maybe we could convert them to what they were at specific year later?
+```{r}
+# hong kong (hkd): hongKong
+hongKong <- subset(dat, dataSet == "HongKong")
+hongKong$income <- (hongKong %>% mutate(income*0.13))$income*0.13
+
+# austria (euros): vienna
+vienna <- subset(dat, dataSet == "vienna")
+vienna$income <- (vienna %>% mutate(income*1.09))$income*1.09
+
+# canada (cad): toronto, psy202
+toronto <- subset(dat, dataSet == "toronto")
+toronto$income <- (toronto %>% mutate(income*0.73))$income*0.73
+psy202 <- subset(dat, dataSet == "202psy")
+psy202$income <- (psy202 %>% mutate(income*0.73))$income*0.73
+canada <- rbind(toronto, psy202)
+
+# america: haneda 2019replication, 2018spring, psy250, hatton(?)
+spring2018 <- subset(dat, dataSet == "2018spring")
+psy250 <- subset(dat, dataSet == "psy250.")
+hatton <- subset(dat, dataSet == "hatton")
+haneda <- subset(dat, dataSet == "haneda")
+replication2019 <- subset(dat, dataSet == "2019replication")
+america <- rbind(spring2018, psy250, hatton, replication2019)
+```
+full data table
+```{r}
+full_data <- rbind(hongKong, vienna, canada, america)
+full_data$income[full_data$income == 0 | full_data$income > 300000] <- NA
+
 ```
 statistical tests
 ```{r}
 
+```
+graphs
+```{r}
+library(ggplot2)
+ggplot(full_data, aes(smileLaugh, income)) + geom_boxplot()
 ```
 
