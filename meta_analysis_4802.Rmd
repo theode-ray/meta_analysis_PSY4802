@@ -12,4 +12,63 @@ big_data = read_excel("/Users/theodorerogers/Downloads/meta_analysisDat.xlsx")
 # add study location as predictor
 # you don't have to do analyses on specifically one location or another
 ```
+creating dataframe of numerics as default
+```{r}
+View(big_data)
+dat = cbind.data.frame(big_data$dataSet)
+# creating dataframe of numerics as default
+for (col in big_data[2:28]) {
+  dat = cbind.data.frame(dat, as.numeric(col))
+}
+colnames(dat) <- names(big_data)
+```
+changing specific values to their specific things
+```{r}
+library(dplyr)
+#ladder
+ladder <- as.factor(dat$ladder)
+dat$ladder <- ladder
+# columns 3 to 8
+for (i in 3:8) {
+  dat[i][dat[i] == "1"] <- "yes"
+  dat[i][dat[i] == "2"] <- "no"
+}
+# columns 11 to 16
+for (i in 11:16) {
+  dat[i][dat[i] == "1"] <- "yes"
+  dat[i][dat[i] == "2"] <- "no"
+}
+# columns 19 to 23
+for (i in 19:23) {
+  dat[i][dat[i] == "1"] <- "yes"
+  dat[i][dat[i] == "2"] <- "no"
+}
+# gender
+dat$gender[dat$gender == "1"] <- "woman"
+dat$gender[dat$gender == "2"] <- "man"
+dat$gender[dat$gender == "3"] <- "nonbinary"
+dat$gender[dat$gender == "4"] <- NA
+# maritalStatus
+dat$maritalStatus[dat$maritalStatus == "1"] <- "married"
+dat$maritalStatus[dat$maritalStatus == "2"] <- "domestic partnership"
+dat$maritalStatus[dat$maritalStatus == "3"] <- "single"
+dat$maritalStatus[dat$maritalStatus == "4"] <- "divorced or separated"
+dat$maritalStatus[dat$maritalStatus == "5"] <- "widowed"
+dat$maritalStatus[dat$maritalStatus == "6"] <- NA
+# residentialArea
+dat$residentialArea[dat$residentialArea == "1"] <- "rural"
+dat$residentialArea[dat$residentialArea == "2"] <- "village"
+dat$residentialArea[dat$residentialArea == "3"] <- "urban/city"
+dat$residentialArea[dat$residentialArea == "4"] <- "suburban"
+# education
+dat$education[dat$education == "1"] <- "primary or less"
+dat$education[dat$education == "2"] <- "secondary"
+dat$education[dat$education == "3"] <- "some teriary"
+dat$education[dat$education == "4"] <- "full teritary"
+dat$education[dat$education == "5"] <- "graduate degree"
+```
+statistical tests
+```{r}
+
+```
 
