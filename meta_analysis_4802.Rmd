@@ -117,4 +117,36 @@ graphs
 library(ggplot2)
 ggplot(full_data, aes(smileLaugh, income)) + geom_boxplot()
 ```
+```{r}
+#ChatGPT: how to do hierarchical regression
+
+#Pre-analysis:
+  #create new column pos feelings with averages of smileLaugh and enjoyment for each individual 
+  #this requires a for loop (or mutate?)
+#Do the same for negative feelings: worry, sadness, depression, anger
+#basic needs unmet: need to average food and shelter
+#study sites: need to get a list of all study sites in column dataset
+#unique_categories <- unique(my_data$Category)
+
+#dependent_var = Cantril AKA (ladder column) 
+
+
+# Step 2: Fit a simple linear regression model 
+
+#model 1: Cantril’s Self-Anchoring Striving Scale
+model1a <- lm(dependent_var ~ predictor1 + predictor2, data = data)
+
+#Fit a hierarchical regression model, adding study_site as a predictor
+model1b <- lm(dependent_var ~ predictor1 + predictor2 + study_site, data = data)
+
+
+# Step 4: Compare models using ANOVA
+anova_result <- anova(model1, modelb)
+
+# Step 5: Display the ANOVA table
+print(anova_result)
+
+# Step 6: Check the summary of the final model
+summary(model1b)
+```
 
