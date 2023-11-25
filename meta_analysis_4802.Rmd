@@ -14,15 +14,16 @@ big_data = read_excel("/Users/theodorerogers/Downloads/meta_analysisDat.xlsx")
 ```
 creating dataframe of numerics as default
 ```{r}
-View(big_data)
 dat = cbind.data.frame(big_data$dataSet)
 # creating dataframe of numerics as default
+suppressWarnings({
 for (col in big_data[2:28]) {
   dat = cbind.data.frame(dat, as.numeric(col))
-}
+}  })
 colnames(dat) <- names(big_data)
+full_data_vals <- dat
 ```
-changing specific values to their specific things (not income, due to currency differences)
+changing specific values to their specific things for full_data_names (not income, due to currency differences)
 ```{r}
 library(dplyr)
 #ladder
@@ -51,7 +52,6 @@ dat$gender[dat$gender == "1"] <- "woman"
 dat$gender[dat$gender == "2"] <- "man"
 dat$gender[dat$gender == "3"] <- "nonbinary"
 dat$gender[dat$gender == "4"] <- NA
-
 # maritalStatus
 dat$maritalStatus[dat$maritalStatus == "1"] <- "married"
 dat$maritalStatus[dat$maritalStatus == "2"] <- "domestic partnership"
@@ -77,7 +77,7 @@ dat$education[dat$education == "5"] <- "graduate degree"
 dat$income <- as.numeric(dat$income)
 ```
 subsets for datasets split by country:
-For this section, I modified the values of the different incomes by converting their income to 2023 USD, after looking up the conversion rate on Google. Maybe we could convert them to what they were at specific year later?
+For this section, I modified the values of the different incomes by converting their income to 2023 USD, after looking up the conversion rate on Google. You might want to get rid of outliers for the specific location tests if you do statistics on them. Maybe we could convert them to what they were at specific year later? 
 ```{r}
 # hong kong (hkd): hongKong
 hongKong <- subset(dat, dataSet == "HongKong")
@@ -100,53 +100,34 @@ psy250 <- subset(dat, dataSet == "psy250.")
 hatton <- subset(dat, dataSet == "hatton")
 haneda <- subset(dat, dataSet == "haneda")
 replication2019 <- subset(dat, dataSet == "2019replication")
-america <- rbind(spring2018, psy250, hatton, replication2019)
+america <- rbind(spring2018, psy250, hatton, haneda, replication2019)
 ```
 full data table
+For this section, I removed outliers that made more than 300K or less than 1K
 ```{r}
-full_data <- rbind(hongKong, vienna, canada, america)
-full_data$income[full_data$income == 0 | full_data$income > 300000] <- NA
-
+full_data_names <- rbind(hongKong, vienna, canada, america)
+full_data_names$income[full_data_names$income < 1000 | full_data_names$income > 300000] <- NA
+full_data_vals$income <- full_data_names$income
 ```
-statistical tests
+statistical tests (for this, use full_data_vals)
 ```{r}
-
+# some biserial correlation for binary variables
+library(ltm)
+bsc_smile <- biserial.cor(full_data_vals$income,full_data_vals$smileLaugh, use = "complete.obs")
+bsc_enjoyment <- biserial.cor(full_data_vals$income,full_data_vals$enjoyment, use = "complete.obs")
+bsc_worry <- biserial.cor(full_data_vals$income,full_data_vals$worry, use = "complete.obs")
+bsc_sadness <- biserial.cor(full_data_vals$income,full_data_vals$sadness, use = "complete.obs")
+# some pearson product moment correlations
+ppm_smile <- cor.test(full_data_vals$income,full_data_vals$smileLaugh)
+ppm_enjoyment <- cor.test(full_data_vals$income,full_data_vals$enjoyment)
+ppm_worry <- cor.test(full_data_vals$income,full_data_vals$worry)
+ppm_sadness <- cor.test(full_data_vals$income,full_data_vals$sadness)
 ```
-graphs
+graphs (for this, use full_data_names)
 ```{r}
 library(ggplot2)
-ggplot(full_data, aes(smileLaugh, income)) + geom_boxplot()
-```
-```{r}
-#ChatGPT: how to do hierarchical regression
-
-#Pre-analysis:
-  #create new column pos feelings with averages of smileLaugh and enjoyment for each individual 
-  #this requires a for loop (or mutate?)
-#Do the same for negative feelings: worry, sadness, depression, anger
-#basic needs unmet: need to average food and shelter
-#study sites: need to get a list of all study sites in column dataset
-#unique_categories <- unique(my_data$Category)
-
-#dependent_var = Cantril AKA (ladder column) 
-
-
-# Step 2: Fit a simple linear regression model 
-
-#model 1: Cantril’s Self-Anchoring Striving Scale
-model1a <- lm(dependent_var ~ predictor1 + predictor2, data = data)
-
-#Fit a hierarchical regression model, adding study_site as a predictor
-model1b <- lm(dependent_var ~ predictor1 + predictor2 + study_site, data = data)
-
-
-# Step 4: Compare models using ANOVA
-anova_result <- anova(model1, modelb)
-
-# Step 5: Display the ANOVA table
-print(anova_result)
-
-# Step 6: Check the summary of the final model
-summary(model1b)
+library(tidyr)
+# here is an example of how to make a graph, where NA is not included as a category
+full_data_names %>% drop_na(smileLaugh) %>% ggplot(aes(smileLaugh, income)) + geom_boxplot()
 ```
 
