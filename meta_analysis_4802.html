@@ -367,63 +367,11 @@ big_data = read_excel(&quot;/Users/theodorerogers/Downloads/meta_analysisDat.xls
 <p>creating dataframe of numerics as default</p>
 <pre class="r"><code>dat = cbind.data.frame(big_data$dataSet)
 # creating dataframe of numerics as default
+suppressWarnings({
 for (col in big_data[2:28]) {
   dat = cbind.data.frame(dat, as.numeric(col))
-}</code></pre>
-<pre><code>## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion
-
-## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion
-
-## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion
-
-## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion
-
-## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion
-
-## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion
-
-## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion
-
-## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion
-
-## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion
-
-## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion
-
-## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion
-
-## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion
-
-## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion
-
-## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion
-
-## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion
-
-## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion
-
-## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion
-
-## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion
-
-## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion
-
-## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion
-
-## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion
-
-## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion
-
-## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion
-
-## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion
-
-## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion
-
-## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion
-
-## Warning in data.frame(..., check.names = FALSE): NAs introduced by coercion</code></pre>
-<pre class="r"><code>colnames(dat) &lt;- names(big_data)
+}  })
+colnames(dat) &lt;- names(big_data)
 full_data_vals &lt;- dat</code></pre>
 <p>changing specific values to their specific things for full_data_names
 (not income, due to currency differences)</p>
