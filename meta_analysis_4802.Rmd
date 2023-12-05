@@ -201,6 +201,22 @@ dat$BasicNeeds <- rowMeans(dat[, c("food", "shelter")], na.rm = TRUE)
 # 7. Create another column of psych needs
 dat$PsychNeeds <- rowMeans(dat[, c("respect", "learn", "opportunity", "time", "emergency")], na.rm = TRUE)
 
+#8. Location Names to Numeric
+dat[1][dat[1] == "toronto"] <- 1
+dat[1][dat[1] == "vienna"] <- 2
+dat[1][dat[1] == "2018spring"] <- 3
+dat[1][dat[1] == "2019replication"] <- 4
+dat[1][dat[1] == "psy250."] <- 5
+dat[1][dat[1] == "HongKong"] <- 6
+dat[1][dat[1] == "hatton"] <- 7
+dat[1][dat[1] == "haneda"] <- 8
+dat$dataSet <- as.numeric(dat$dataSet)
+
+model1a <- lm(ladder ~ BasicNeeds, data = dat)
+model1b <- lm(ladder ~ BasicNeeds + PsychNeeds, data = dat)
+ model1c <- lm(ladder ~ BasicNeeds + PsychNeeds + LuxuryConveniences, data = dat)
+ model1d <- lm(ladder ~ BasicNeeds + PsychNeeds + LuxuryConveniences + livingStandard, data = dat)
+ model1e <-lm(ladder ~ BasicNeeds + PsychNeeds + LuxuryConveniences + livingStandard + logIncome, data = dat)
 class(ladder)
 dat$ladder<- as.numeric(dat$ladder)
 dat$PositiveFeelings<- as.numeric(dat$PositiveFeelings)
