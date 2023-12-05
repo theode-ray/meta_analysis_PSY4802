@@ -130,4 +130,84 @@ library(tidyr)
 # here is an example of how to make a graph, where NA is not included as a category
 full_data_names %>% drop_na(smileLaugh) %>% ggplot(aes(smileLaugh, income)) + geom_boxplot()
 ```
+```{r}
+dat <- dat %>% mutate(enjoyment= recode(enjoyment, "yes" = "1", "no" = "0"))
+dat$enjoyment<- as.numeric(dat$enjoyment)
 
+dat <- dat %>% mutate(smileLaugh= recode(smileLaugh, "yes" = "1", "no" = "0"))
+dat$smileLaugh <- as.numeric(dat$smileLaugh)
+
+dat <- dat %>% mutate(sadness= recode(sadness, "yes" = "-1", "no" = "0"))
+dat$sadness <- as.numeric(dat$sadness)
+
+dat <- dat %>% mutate(anger= recode(anger, "yes" = "-1", "no" = "0"))
+dat$anger <- as.numeric(dat$anger)
+
+dat <- dat %>% mutate(depression= recode(depression, "yes" = "-1", "no" = "0"))
+dat$depression <- as.numeric(dat$depression)
+
+dat <- dat %>% mutate(worry= recode(worry, "yes" = "-1", "no" = "0"))
+dat$worry <- as.numeric(dat$worry)
+
+dat <- dat %>% mutate(respect= recode(respect, "yes" = "1", "no" = "0"))
+dat$respect <- as.numeric(dat$respect)
+
+dat <- dat %>% mutate(learn= recode(learn, "yes" = "1", "no" = "0"))
+dat$learn <- as.numeric(dat$learn)
+
+dat <- dat %>% mutate(opportunity= recode(opportunity, "yes" = "1", "no" = "0"))
+dat$opportunity <- as.numeric(dat$opportunity)
+
+dat <- dat %>% mutate(livingStandard= recode(opportunity, "yes" = "1", "no" = "0"))
+dat$livingStandard <- as.numeric(dat$opportunity)
+
+dat <- dat %>% mutate(emergency= recode(emergency, "yes" = "1", "no" = "0"))
+dat$emergency <- as.numeric(dat$emergency)
+
+dat <- dat %>% mutate(time= recode(time, "yes" = "1", "no" = "0"))
+dat$time <- as.numeric(dat$time)
+
+dat <- dat %>% mutate(food= recode(food, "yes" = "1", "no" = "0"))
+dat$food <- as.numeric(dat$food)
+
+dat <- dat %>% mutate(shelter= recode(shelter, "yes" = "1", "no" = "0"))
+dat$shelter <- as.numeric(dat$shelter)
+
+dat <- dat %>% mutate(internetAccess= recode(internetAccess, "yes" = "1", "no" = "0"))
+dat$internetAccess <- as.numeric(dat$internetAccess)
+
+dat <- dat %>% mutate(computer= recode(computer, "yes" = "1", "no" = "0"))
+dat$computer<- as.numeric(dat$computer)
+
+dat <- dat %>% mutate(television= recode(television, "yes" = "1", "no" = "0"))
+dat$television<- as.numeric(dat$television)
+
+
+# 2. Average smileLaugh and enjoyment into Positive feelings column
+dat$PositiveFeelings <- rowMeans(dat[, c("smileLaugh", "enjoyment")], na.rm = TRUE)
+
+# 3. Average worry, sadness, depression, and anger into Negative feelings column
+dat$NegativeFeelings <- rowMeans(dat[, c("worry", "sadness", "depression", "anger")], na.rm = TRUE)
+
+# 4. Create another column with logIncome
+dat$logIncome <- log(dat$income)
+
+# 5. Create another column of luxury conveniences
+dat$LuxuryConveniences <- rowMeans(dat[, c("television", "internetAccess", "computer")], na.rm = TRUE)
+
+# 6. Create another column of basic needs
+dat$BasicNeeds <- rowMeans(dat[, c("food", "shelter")], na.rm = TRUE)
+
+# 7. Create another column of psych needs
+dat$PsychNeeds <- rowMeans(dat[, c("respect", "learn", "opportunity", "time", "emergency")], na.rm = TRUE)
+
+model1a <- lm(ladder ~ BasicNeeds, data = dat)
+
+model1b <- lm(ladder ~ BasicNeeds + PsychNeeds, data = dat)
+
+ model1c <- lm(ladder ~ BasicNeeds + PsychNeeds + LuxuryConveniences, data = dat)
+
+ model1d <- lm(ladder ~ BasicNeeds + PsychNeeds + LuxuryConveniences + livingStandard, data = dat)
+
+ model1e <-lm(ladder ~ BasicNeeds + PsychNeeds + LuxuryConveniences + livingStandard + logIncome, data = dat)
+```
