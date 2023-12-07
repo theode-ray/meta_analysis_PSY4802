@@ -264,5 +264,7 @@ summary(model3c)
  model3d <-lm(NegativeFeelings ~ BasicNeeds + PsychNeeds + LuxuryConveniences + livingStandard + logIncome + dataSet, data = dat)
 summary(model3d)
  
-
+anova1 <- anova(model1a, model1b, model1c, model1d)
+anova2 <-  anova(model2a, model2b, model2c, model2d)
+anova3 <- anova(model3a, model3b, model3c, model3d)
 ```
