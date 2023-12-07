@@ -83,6 +83,7 @@ For this section, I modified the values of the different incomes by converting t
 hongKong <- subset(dat, dataSet == "HongKong")
 hongKong$income <- (hongKong %>% mutate(income*0.13))$income*0.13
 
+
 # austria (euros): vienna
 vienna <- subset(dat, dataSet == "vienna")
 vienna$income <- (vienna %>% mutate(income*1.09))$income*1.09
@@ -108,6 +109,7 @@ For this section, I removed outliers that made more than 300K or less than 1K
 full_data_names <- rbind(hongKong, vienna, canada, america)
 full_data_names$income[full_data_names$income < 1000 | full_data_names$income > 300000] <- NA
 full_data_vals$income <- full_data_names$income
+dat$income <- full_data_names$income
 ```
 statistical tests (for this, use full_data_vals)
 ```{r}
@@ -218,6 +220,7 @@ dat$ladder<- as.numeric(dat$ladder)
 dat$PositiveFeelings<- as.numeric(dat$PositiveFeelings)
 dat$NegativeFeelings<- as.numeric(dat$NegativeFeelings)
 
+View(dat)
 model1a <- lm(ladder ~ BasicNeeds + dataSet, data = dat)
 model1b <- lm(ladder ~ BasicNeeds + PsychNeeds + dataSet, data = dat)
 model1c <- lm(ladder ~ BasicNeeds + PsychNeeds + LuxuryConveniences + dataSet, data = dat)
@@ -260,10 +263,6 @@ summary(model3c)
 
  model3d <-lm(NegativeFeelings ~ BasicNeeds + PsychNeeds + LuxuryConveniences + livingStandard + logIncome + dataSet, data = dat)
 summary(model3d)
-
-
-anova1 <- anova(model1a, model1b, model1c, model1d)
-anova2 <-  anova(model2a, model2b, model2c, model2d)
-anova3 <- anova(model3a, model3b, model3c, model3d)
+ 
 
 ```
