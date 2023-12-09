@@ -1,13 +1,17 @@
+
+
 ---
 title: "meta_analysis"
 author: "Theodore Rogers, Olivia Costa, Quincey Feragen, Penelope Corbett"
 date: "2023-11-21"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 reading excel spreadsheet
 ```{r}
 library(readxl)
-big_data = read_excel("/Users/theodorerogers/Downloads/meta_analysisDat.xlsx")
+big_data = read_excel("/Users/penelopecorbett/Downloads/meta_analysisDat_yellow.xlsx")
 # do one test on all of the models in table 4
 # add study location as predictor
 # you don't have to do analyses on specifically one location or another
@@ -109,7 +113,30 @@ For this section, I removed outliers that made more than 300K or less than 1K
 full_data_names <- rbind(hongKong, vienna, canada, america)
 full_data_names$income[full_data_names$income < 1000 | full_data_names$income > 300000] <- NA
 full_data_vals$income <- full_data_names$income
-dat$income <- full_data_names$income
+full_data_names <- rbind(hongKong, vienna, canada, america)
+full_data_names$income[full_data_names$income < 1000 | full_data_names$income > 300000] <- NA
+full_data_vals$income <- full_data_names$income
+
+colnames(dat)[colnames(dat) == "income"] <- "old_income"
+
+
+
+#Option 2: Do what Dr Woodward told me to do
+ dat$ID <- as.factor(1:nrow(dat))
+#
+#
+ full_data_names$ID <- dat$ID
+
+ a <- select(full_data_names, ID, income)
+#
+#
+# colnames(dat)[colnames(dat) == "income"] <- "old_income"
+#
+# # should I assign it to result??
+dat <- left_join(dat, a, by = "ID")
+
+dat %>% select(income, old_income)
+
 ```
 statistical tests (for this, use full_data_vals)
 ```{r}
@@ -132,6 +159,15 @@ library(tidyr)
 # here is an example of how to make a graph, where NA is not included as a category
 full_data_names %>% drop_na(smileLaugh) %>% ggplot(aes(smileLaugh, income)) + geom_boxplot()
 ```
+
+
+```{r}
+library(ggplot2)
+library(tidyr)
+# here is an example of how to make a graph, where NA is not included as a category
+full_data_names %>% drop_na(smileLaugh) %>% ggplot(aes(smileLaugh, income)) + geom_boxplot()
+```
+
 ```{r}
 dat <- dat %>% mutate(enjoyment= recode(enjoyment, "yes" = "1", "no" = "0"))
 dat$enjoyment<- as.numeric(dat$enjoyment)
@@ -213,31 +249,28 @@ dat[1][dat[1] == "HongKong"] <- 6
 dat[1][dat[1] == "hatton"] <- 7
 dat[1][dat[1] == "haneda"] <- 8
 dat$dataSet <- as.numeric(dat$dataSet)
-View(dat)
+dat$dataSet <- factor(dat$dataSet)
+
 
 class(ladder)
 dat$ladder<- as.numeric(dat$ladder)
 dat$PositiveFeelings<- as.numeric(dat$PositiveFeelings)
 dat$NegativeFeelings<- as.numeric(dat$NegativeFeelings)
 
-View(dat)
-model1a <- lm(ladder ~ BasicNeeds + dataSet, data = dat)
-model1b <- lm(ladder ~ BasicNeeds + PsychNeeds + dataSet, data = dat)
-model1c <- lm(ladder ~ BasicNeeds + PsychNeeds + LuxuryConveniences + dataSet, data = dat)
-model1d <- lm(ladder ~ BasicNeeds + PsychNeeds + LuxuryConveniences + livingStandard + dataSet, data = dat)
-model1e <-lm(ladder ~ BasicNeeds + PsychNeeds + LuxuryConveniences + livingStandard + logIncome + dataSet, data = dat)
 
-test <- lm(ladder ~ BasicNeeds + PsychNeeds, data = dat)
-summary(test)
+allParticipants<-dat #so we don't lose everything you've already done
+dat<- na.omit(allParticipants)
 
 model1a <- lm(ladder ~ BasicNeeds + dataSet, data = dat)
-summary(model1a)
-
 model1b <- lm(ladder ~ BasicNeeds + PsychNeeds + dataSet, data = dat)
-
 model1c <- lm(ladder ~ BasicNeeds + PsychNeeds + LuxuryConveniences + livingStandard + dataSet, data = dat)
+model1d <- lm(ladder ~ BasicNeeds + PsychNeeds + LuxuryConveniences + livingStandard + logIncome + dataSet, data = dat)
 
-model1d <-lm(ladder ~ BasicNeeds + PsychNeeds + LuxuryConveniences + livingStandard + logIncome + dataSet, data = dat)
+
+summary(model1a)
+summary(model1b)
+summary(model1c)
+summary(model1d)
  
 model2a <- lm(PositiveFeelings ~ BasicNeeds + dataSet, data = dat)
 summary(model2a)
@@ -263,8 +296,20 @@ summary(model3c)
 
  model3d <-lm(NegativeFeelings ~ BasicNeeds + PsychNeeds + LuxuryConveniences + livingStandard + logIncome + dataSet, data = dat)
 summary(model3d)
- 
+
+
 anova1 <- anova(model1a, model1b, model1c, model1d)
+anova1
 anova2 <-  anova(model2a, model2b, model2c, model2d)
+anova2
 anova3 <- anova(model3a, model3b, model3c, model3d)
+anova3
+
+
+
 ```
+
+
+
+
+
