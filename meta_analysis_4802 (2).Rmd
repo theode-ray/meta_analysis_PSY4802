@@ -1,0 +1,370 @@
+
+
+---
+title: "meta_analysis"
+author: "Theodore Rogers, Olivia Costa, Quincey Feragen, Penelope Corbett"
+date: "2023-11-21"
+output:
+  html_document: default
+  pdf_document: default
+---
+reading excel spreadsheet
+```{r}
+library(readxl)
+big_data = read_excel("/Users/olivia/Downloads/meta_analysisDat.xlsx")
+# do one test on all of the models in table 4
+# add study location as predictor
+# you don't have to do analyses on specifically one location or another
+```
+creating dataframe of numerics as default
+```{r}
+dat = cbind.data.frame(big_data$dataSet)
+# creating dataframe of numerics as default
+suppressWarnings({
+for (col in big_data[2:28]) {
+  dat = cbind.data.frame(dat, as.numeric(col))
+}  })
+colnames(dat) <- names(big_data)
+full_data_vals <- dat
+```
+changing specific values to their specific things for full_data_names (not income, due to currency differences)
+```{r}
+library(dplyr)
+#ladder
+ladder <- as.factor(dat$ladder)
+dat$ladder <- ladder
+
+# columns 3 to 8
+for (i in 3:8) {
+  dat[i][dat[i] == "1"] <- "yes"
+  dat[i][dat[i] == "2"] <- "no"
+}
+# columns 11 to 16
+for (i in 11:16) {
+  dat[i][dat[i] == "1"] <- "yes"
+  dat[i][dat[i] == "2"] <- "no"
+}
+  
+# columns 19 to 23
+for (i in 19:23) {
+  dat[i][dat[i] == "1"] <- "yes"
+  dat[i][dat[i] == "2"] <- "no"
+}
+  
+# gender
+dat$gender[dat$gender == "1"] <- "woman"
+dat$gender[dat$gender == "2"] <- "man"
+dat$gender[dat$gender == "3"] <- "nonbinary"
+dat$gender[dat$gender == "4"] <- NA
+# maritalStatus
+dat$maritalStatus[dat$maritalStatus == "1"] <- "married"
+dat$maritalStatus[dat$maritalStatus == "2"] <- "domestic partnership"
+dat$maritalStatus[dat$maritalStatus == "3"] <- "single"
+dat$maritalStatus[dat$maritalStatus == "4"] <- "divorced or separated"
+dat$maritalStatus[dat$maritalStatus == "5"] <- "widowed"
+dat$maritalStatus[dat$maritalStatus == "6"] <- NA
+
+# residentialArea
+dat$residentialArea[dat$residentialArea == "1"] <- "rural"
+dat$residentialArea[dat$residentialArea == "2"] <- "village"
+dat$residentialArea[dat$esidentialArea == "3"] <- "urban/city"
+dat$residentialArea[dat$residentialArea == "4"] <- "suburban"
+
+# education
+dat$education[dat$education == "1"] <- "primary or less"
+dat$education[dat$education == "2"] <- "secondary"
+dat$education[dat$education == "3"] <- "some teriary"
+dat$education[dat$education == "4"] <- "full teritary"
+dat$education[dat$education == "5"] <- "graduate degree"
+
+# make sure income is numeric
+dat$income <- as.numeric(dat$income)
+```
+subsets for dataSets split by country:
+For this section, I modified the values of the different incomes by converting their income to 2023 USD, after looking up the conversion rate on Google. You might want to get rid of outliers for the specific location tests if you do statistics on them. Maybe we could convert them to what they were at specific year later? 
+```{r}
+# hong kong (hkd): hongKong
+hongKong <- subset(dat, dataSet == "HongKong")
+hongKong$income <- (hongKong %>% mutate(income*0.13))$income*0.13
+
+
+# austria (euros): vienna
+vienna <- subset(dat, dataSet == "vienna")
+vienna$income <- (vienna %>% mutate(income*1.09))$income*1.09
+
+# canada (cad): toronto, psy202
+toronto <- subset(dat, dataSet == "toronto")
+toronto$income <- (toronto %>% mutate(income*0.73))$income*0.73
+psy202 <- subset(dat, dataSet == "202psy")
+psy202$income <- (psy202 %>% mutate(income*0.73))$income*0.73
+canada <- rbind(toronto, psy202)
+
+# america: haneda 2019replication, 2018spring, psy250, hatton(?)
+spring2018 <- subset(dat, dataSet == "2018spring")
+psy250 <- subset(dat, dataSet == "psy250.")
+hatton <- subset(dat, dataSet == "hatton")
+haneda <- subset(dat, dataSet == "haneda")
+replication2019 <- subset(dat, dataSet == "2019replication")
+america <- rbind(spring2018, psy250, hatton, haneda, replication2019)
+```
+full data table
+For this section, I removed outliers that made more than 300K or less than 1K
+```{r}
+full_data_names <- rbind(hongKong, vienna, canada, america)
+full_data_names$income[full_data_names$income < 1000 | full_data_names$income > 300000] <- NA
+full_data_vals$income <- full_data_names$income
+full_data_names <- rbind(hongKong, vienna, canada, america)
+full_data_names$income[full_data_names$income < 1000 | full_data_names$income > 300000] <- NA
+full_data_vals$income <- full_data_names$income
+
+colnames(dat)[colnames(dat) == "income"] <- "old_income"
+
+
+
+#Option 2: Do what Dr Woodward told me to do
+ dat$ID <- as.factor(1:nrow(dat))
+#
+#
+ full_data_names$ID <- dat$ID
+
+ a <- select(full_data_names, ID, income)
+#
+#
+# colnames(dat)[colnames(dat) == "income"] <- "old_income"
+#
+# # should I assign it to result??
+dat <- left_join(dat, a, by = "ID")
+
+dat %>% select(income, old_income)
+
+```
+statistical tests (for this, use full_data_vals)
+```{r}
+# some biserial correlation for binary variables
+library(ltm)
+bsc_smile <- biserial.cor(full_data_vals$income,full_data_vals$smileLaugh, use = "complete.obs")
+bsc_enjoyment <- biserial.cor(full_data_vals$income,full_data_vals$enjoyment, use = "complete.obs")
+bsc_worry <- biserial.cor(full_data_vals$income,full_data_vals$worry, use = "complete.obs")
+bsc_sadness <- biserial.cor(full_data_vals$income,full_data_vals$sadness, use = "complete.obs")
+# some pearson product moment correlations
+ppm_smile <- cor.test(full_data_vals$income,full_data_vals$smileLaugh)
+ppm_enjoyment <- cor.test(full_data_vals$income,full_data_vals$enjoyment)
+ppm_worry <- cor.test(full_data_vals$income,full_data_vals$worry)
+ppm_sadness <- cor.test(full_data_vals$income,full_data_vals$sadness)
+```
+graphs (for this, use full_data_names)
+```{r}
+library(ggplot2)
+library(tidyr)
+# here is an example of how to make a graph, where NA is not included as a category
+full_data_names %>% drop_na(smileLaugh) %>% ggplot(aes(smileLaugh, income)) + geom_boxplot()
+```
+
+
+```{r}
+library(ggplot2)
+library(tidyr)
+# here is an example of how to make a graph, where NA is not included as a category
+full_data_names %>% drop_na(smileLaugh) %>% ggplot(aes(smileLaugh, income)) + geom_boxplot()
+```
+
+```{r}
+dat <- dat %>% mutate(enjoyment= recode(enjoyment, "yes" = "1", "no" = "0"))
+dat$enjoyment<- as.numeric(dat$enjoyment)
+
+dat <- dat %>% mutate(smileLaugh= recode(smileLaugh, "yes" = "1", "no" = "0"))
+dat$smileLaugh <- as.numeric(dat$smileLaugh)
+
+dat <- dat %>% mutate(sadness= recode(sadness, "yes" = "-1", "no" = "0"))
+dat$sadness <- as.numeric(dat$sadness)
+
+dat <- dat %>% mutate(anger= recode(anger, "yes" = "-1", "no" = "0"))
+dat$anger <- as.numeric(dat$anger)
+
+dat <- dat %>% mutate(depression= recode(depression, "yes" = "-1", "no" = "0"))
+dat$depression <- as.numeric(dat$depression)
+
+dat <- dat %>% mutate(worry= recode(worry, "yes" = "-1", "no" = "0"))
+dat$worry <- as.numeric(dat$worry)
+
+dat <- dat %>% mutate(respect= recode(respect, "yes" = "1", "no" = "0"))
+dat$respect <- as.numeric(dat$respect)
+
+dat <- dat %>% mutate(learn= recode(learn, "yes" = "1", "no" = "0"))
+dat$learn <- as.numeric(dat$learn)
+
+dat <- dat %>% mutate(opportunity= recode(opportunity, "yes" = "1", "no" = "0"))
+dat$opportunity <- as.numeric(dat$opportunity)
+
+dat <- dat %>% mutate(livingStandard= recode(opportunity, "yes" = "1", "no" = "0"))
+dat$livingStandard <- as.numeric(dat$opportunity)
+
+dat <- dat %>% mutate(emergency= recode(emergency, "yes" = "1", "no" = "0"))
+dat$emergency <- as.numeric(dat$emergency)
+
+dat <- dat %>% mutate(time= recode(time, "yes" = "1", "no" = "0"))
+dat$time <- as.numeric(dat$time)
+
+dat <- dat %>% mutate(food= recode(food, "yes" = "1", "no" = "0"))
+dat$food <- as.numeric(dat$food)
+
+dat <- dat %>% mutate(shelter= recode(shelter, "yes" = "1", "no" = "0"))
+dat$shelter <- as.numeric(dat$shelter)
+
+dat <- dat %>% mutate(internetAccess= recode(internetAccess, "yes" = "1", "no" = "0"))
+dat$internetAccess <- as.numeric(dat$internetAccess)
+
+dat <- dat %>% mutate(computer= recode(computer, "yes" = "1", "no" = "0"))
+dat$computer<- as.numeric(dat$computer)
+
+dat <- dat %>% mutate(television= recode(television, "yes" = "1", "no" = "0"))
+dat$television<- as.numeric(dat$television)
+
+
+# 2. Average smileLaugh and enjoyment into Positive feelings column
+dat$PositiveFeelings <- rowMeans(dat[, c("smileLaugh", "enjoyment")], na.rm = TRUE)
+
+# 3. Average worry, sadness, depression, and anger into Negative feelings column
+dat$NegativeFeelings <- rowMeans(dat[, c("worry", "sadness", "depression", "anger")], na.rm = TRUE)
+
+# 4. Create another column with logIncome
+dat$logIncome <- log(dat$income)
+
+# 5. Create another column of luxury conveniences
+dat$LuxuryConveniences <- rowMeans(dat[, c("television", "internetAccess", "computer")], na.rm = TRUE)
+
+# 6. Create another column of basic needs
+dat$BasicNeeds <- rowMeans(dat[, c("food", "shelter")], na.rm = TRUE)
+
+# 7. Create another column of psych needs
+dat$PsychNeeds <- rowMeans(dat[, c("respect", "learn", "opportunity", "time", "emergency")], na.rm = TRUE)
+
+# 8. Location Names to Numeric
+dat[1][dat[1] == "toronto"] <- 1
+dat[1][dat[1] == "vienna"] <- 2
+dat[1][dat[1] == "2018spring"] <- 3
+dat[1][dat[1] == "2019replication"] <- 4
+dat[1][dat[1] == "psy250."] <- 5
+dat[1][dat[1] == "HongKong"] <- 6
+dat[1][dat[1] == "hatton"] <- 7
+dat[1][dat[1] == "haneda"] <- 8
+dat$dataSet <- as.numeric(dat$dataSet)
+dat$dataSet <- factor(dat$dataSet)
+
+
+class(ladder)
+dat$ladder<- as.numeric(dat$ladder)
+dat$PositiveFeelings<- as.numeric(dat$PositiveFeelings)
+dat$NegativeFeelings<- as.numeric(dat$NegativeFeelings)
+
+
+allParticipants<-dat #so we don't lose everything you've already done
+dat<- na.omit(allParticipants)
+
+model1a <- lm(ladder ~ BasicNeeds + dataSet, data = dat)
+model1b <- lm(ladder ~ BasicNeeds + PsychNeeds + dataSet, data = dat)
+model1c <- lm(ladder ~ BasicNeeds + PsychNeeds + LuxuryConveniences + livingStandard + dataSet, data = dat)
+model1d <- lm(ladder ~ BasicNeeds + PsychNeeds + LuxuryConveniences + livingStandard + logIncome + dataSet, data = dat)
+
+
+summary(model1a)
+summary(model1b)
+summary(model1c)
+summary(model1d)
+ 
+model2a <- lm(PositiveFeelings ~ BasicNeeds + dataSet, data = dat)
+summary(model2a)
+
+model2b <- lm(PositiveFeelings ~ BasicNeeds + PsychNeeds + dataSet, data = dat)
+summary(model2b)
+
+model2c <- lm(PositiveFeelings ~ BasicNeeds + PsychNeeds + LuxuryConveniences + livingStandard + dataSet, data = dat)
+summary(model2c)
+
+model2d <-lm(PositiveFeelings ~ BasicNeeds + PsychNeeds + LuxuryConveniences + livingStandard + logIncome + dataSet, data = dat)
+summary(model2d)
+ 
+ 
+model3a <- lm(NegativeFeelings ~ BasicNeeds + dataSet, data = dat)
+summary(model3a)
+
+model3b <- lm(NegativeFeelings ~ BasicNeeds + PsychNeeds + dataSet, data = dat)
+summary(model3b)
+
+model3c <- lm(NegativeFeelings ~ BasicNeeds + PsychNeeds + LuxuryConveniences + livingStandard + dataSet, data = dat)
+summary(model3c)
+
+ model3d <-lm(NegativeFeelings ~ BasicNeeds + PsychNeeds + LuxuryConveniences + livingStandard + logIncome + dataSet, data = dat)
+summary(model3d)
+
+
+anova1 <- anova(model1a, model1b, model1c, model1d)
+anova1
+anova2 <-  anova(model2a, model2b, model2c, model2d)
+anova2
+anova3 <- anova(model3a, model3b, model3c, model3d)
+anova3
+
+```
+
+Graphs
+```{r}
+library(ggplot2)
+library(gridExtra)
+#graph of positive feelings ~ Basic Needs
+graphDat <- dat
+class(graphDat$PositiveFeelings)
+class(graphDat$BasicNeeds)
+class(graphDat$PsychNeeds)
+
+ggplot(graphDat, aes(PositiveFeelings))+
+  geom_histogram(aes(BasicNeeds, fill = "Basic Needs"), binwidth = 0.5, color = "black", alpha = 0.7)+
+  geom_histogram(aes(PsychNeeds, fill = "Psychological Needs"), binwidth = 0.5, color = "black", alpha = 0.7)+
+  theme_classic()+
+  labs(title = "Relationship between Postive Feelings, Psychological Needs, and Basic Needs", 
+       y = "Participants", 
+       x = "Positive Feelings")+
+  scale_fill_manual(values = c("Basic Needs" = "darkgoldenrod3", "Psychological Needs" = "firebrick"), 
+                    name = "Variables")
+
+##graphing this another way
+ggplot(graphDat, aes(PositiveFeelings, PsychNeeds))+
+  geom_jitter(color = "firebrick4")+
+  geom_smooth(method = "lm", se = FALSE, color = "black")+
+  theme_classic()+
+  labs(title = "Relationship between Positive Feelings and Psychological Needs", 
+       x = "Positive Feelings", 
+       y = "Psychological Needs")
+
+#graph of Income and Positive Feelings
+ggplot(graphDat, aes(PositiveFeelings, logIncome))+
+  geom_jitter()+
+  geom_smooth(method = "lm", se = FALSE, color = "maroon")+
+  theme_classic()+
+  labs(title = "Relationship between Log Income and Positive Feelings", 
+       x = "Positive Feelings", 
+       y = "Log Income")
+
+#graph of Negative Feelings and Income
+ggplot(graphDat, aes(NegativeFeelings, logIncome))+
+  geom_jitter()+
+  geom_smooth(method = "lm", se = FALSE, color = "darkgoldenrod3")+
+  theme_classic()+
+  labs(title = "Relationship between Log Income and Negative Feelings", 
+       x = "Negative Feelings", 
+       y = "Log Income")
+
+#graph of Positive feelings and luxury items
+ggplot(graphDat, aes(PositiveFeelings, LuxuryConveniences))+
+  geom_jitter(color = "firebrick4")+
+  geom_smooth(method = "lm", se = FALSE, color = "black")+
+  theme_classic()+
+  labs(title = "Relationship between Positive Feelings and Luxury Conveniences", 
+       x = "Positive Feelings", 
+       y = "Luxury Conveniences")
+
+```
+
+
+
+
